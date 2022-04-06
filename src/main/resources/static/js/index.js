@@ -49,3 +49,49 @@ async function winner() {
     const winner = document.getElementById("winner");
     winner.innerText = "sss";
 }
+
+async function clickPosition(id) {
+    if (from === "") {
+        const div = document.getElementById(id);
+        div.style.border = "3px solid #878787";
+
+        from = id;
+        return;
+    }
+    if (from !== "" && to === "") {
+        const div = document.getElementById(from);
+        div.style.border = "none";
+
+        to = id;
+        await move(from, to);
+
+        from = "";
+        to = "";
+    }
+}
+
+async function move(from, to) {
+    const url = window.location.href
+    const split = url.split("/");
+    const boardId = split[split.length - 1];
+
+    const response = await fetch("/move/" + boardId, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            from: from,
+            to: to
+        }),
+    });
+
+    if ((await response).status === 400) {
+        let newVar = await response.json();
+        alert(newVar.model.message);
+    }
+    if (response.redirected) {
+        window.location.href = response.url;
+    }
+}
+
